@@ -1,0 +1,68 @@
+﻿.chat-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    flex: 1 1 auto;
+    
+    overflow-y: auto;
+    position: relative;
+    background: white;
+    /* Padding is set via MudBlazor class */
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-primary {
+    color: #007bff;
+}
+
+.text-secondary {
+    color: #6c757d;
+}
+
+/* Layout: make the chat fill the viewport and keep input at the bottom */
+.chat-outer-container {
+    display: flex;
+    flex-direction: column;
+   
+    justify-content: flex-start;
+    align-items: center;
+    background: #f5f5f5;
+}
+
+.chat-inner-container {
+    display: flex;
+    flex-direction: column;
+ 
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+.chat-messages-container {
+    flex: 1 1 auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+ 
+
+/* Input area always at the bottom */
+.chat-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: #f5f5f5;
+    padding-top: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+}

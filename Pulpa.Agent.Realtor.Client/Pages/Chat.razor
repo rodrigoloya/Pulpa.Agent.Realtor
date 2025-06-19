@@ -1,0 +1,86 @@
+﻿@page "/chat"
+@using MudBlazor
+@inject IJSRuntime JS
+
+<PageTitle>AI Chat</PageTitle>
+
+<div class="chat-outer-container">
+    <MudPaper Class="p-4 chat-inner-container" Elevation="4">
+        <MudText Typo="Typo.h4" GutterBottom="true">AI Chat</MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Ask me anything, and I'll do my best to respond!
+        </MudText>
+
+        <div class="chat-messages-container">
+            <div class="chat-container p-2">
+                @foreach (var message in Messages)
+                {
+                    <MudText Typo="Typo.body1" Class="@GetMessageClass(message.IsUser)">
+                        <b>@(message.IsUser ? "You:" : "AI:")</b> @message.Content
+                    </MudText>
+                }
+                <div class="chat-fade-bottom"></div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <MudTextField @bind-Value="UserInput"
+            Placeholder="Type your message..."
+            FullWidth="true"
+            Class="mt-2"
+            OnKeyDown="HandleInputKeyDown" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendMessage" Class="mt-2">
+                Send
+            </MudButton>
+        </div>
+    </MudPaper>
+</div>
+
+@code {
+    private string UserInput = string.Empty;
+    private List<Message> Messages = new();
+
+
+    private void SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(UserInput))
+        {
+            // Add user message
+            Messages.Add(new Message { Content = UserInput, IsUser = true });
+
+            // Simulate AI response
+            var response = GetAIResponse(UserInput);
+            Messages.Add(new Message { Content = response, IsUser = false });
+
+            // Clear input
+            UserInput = string.Empty;
+        }
+    }
+
+    private async Task HandleInputKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SendMessage();
+            this.StateHasChanged();
+            await Task.Yield();
+        }
+    }
+
+    private string GetAIResponse(string input)
+    {
+        // Simulate AI response (replace with actual API call if needed)
+        return $"You said: {input}. This is a simulated response.";
+    }
+
+    private string GetMessageClass(bool isUser)
+    {
+        return isUser ? "text-right text-primary" : "text-left text-secondary";
+    }
+
+    private class Message
+    {
+        public string Content { get; set; }
+        public bool IsUser { get; set; }
+    }
+}
