@@ -1,10 +1,11 @@
 ﻿@page "/chat"
 @using MudBlazor
+@implements IAsyncDisposable
 @inject IJSRuntime JS
 
 <PageTitle>AI Chat</PageTitle>
 
-<div id="unique_id_scroll_section" class="ma-0" style="height:300px;overflow: auto;">
+<div id="unique_id_scroll_section" @ref="chatContainer" class="ma-0" style="height:300px;overflow: auto;">
     <MudPaper Class="p-4 chat-inner-container" Elevation="4">
         <MudText Typo="Typo.h4" GutterBottom="true">How can I help you today?</MudText>
         <MudText Typo="Typo.body2" Class="mb-4">
@@ -56,7 +57,7 @@
     </MudButton>
 </div>
 
- 
+
 
 @code {
     private string UserInput = string.Empty;
@@ -68,20 +69,51 @@
     private Color _selectedColor = Color.Info;
     private ChatArrowPosition _selectedArrowPosition = ChatArrowPosition.None;
     Color Color = Color.Success;
+    private ElementReference chatContainer;
+    private IJSObjectReference? module;
 
-    private void SendMessage()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            /*
+            Change the {PATH} placeholder in the next line to the path of
+            the collocated JS file in the app. Examples:
+
+                        ./Components/Pages/JsCollocation2.razor.js (.NET 8 or later)
+                        ./Pages/JsCollocation2.razor.js (.NET 7 or earlier)
+                    */
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./Pages/Chat.razor.js");
+        }
+
+    }
+
+    private async Task SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(UserInput))
         {
             // Add user message
-            Messages.Add(new Message { Content = UserInput, IsUser = true });
+            Messages.Add(new Message { Content = UserInput, IsUser = true, Time = DateTime.Now.ToString("t") });
 
             // Simulate AI response
             var response = GetAIResponse(UserInput);
-            Messages.Add(new Message { Content = response, IsUser = false });
+            Messages.Add(new Message { Content = response, IsUser = false, Time = DateTime.Now.ToString("t") });
 
             // Clear input
             UserInput = string.Empty;
+
+            // Request a UI update
+            StateHasChanged();
+
+
+            // Ensure the UI has updated before scrolling
+            await Task.Delay(50);
+            if (module is not null)
+            {
+                await module.InvokeVoidAsync("chatScrollToBottom", chatContainer);
+
+            }
         }
     }
 
@@ -89,9 +121,8 @@
     {
         if (e.Key == "Enter")
         {
-            SendMessage();
-            this.StateHasChanged();
-            await Task.Yield();
+            await SendMessage();
+
         }
     }
 
@@ -116,6 +147,21 @@
             _ => Color.Error
         };
     }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+
 
     private class Message
     {
