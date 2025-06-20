@@ -1,24 +1,19 @@
-﻿ 
+﻿using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.SignalR;
+using Pulpa.Agent.Realtor.Domain.DTO;
 
 namespace Pulpa.Agent.Realtor.Services
 {
-    public class Choice
+    public class OpenAiService
     {
-        public string Text { get; set; }
-    }
-
-    public class OpenAiResponse
-    {
+        private readonly OpenAiResponse _openAiResponse;
         private readonly HttpClient _httpClient;
-        private readonly ILogger _logger;
 
-        public OpenAiResponse(HttpClient httpClient, ILogger logger)
+        public OpenAiService(HttpClient httpClient, ILogger logger)
         {
-            this._httpClient = httpClient;
-            _logger = logger;
+           
+            _httpClient = httpClient;
         }
-        public List<Choice> Choices { get; set; }
-       
 
         private async Task<string> GetAIResponse(string input)
         {
@@ -34,4 +29,15 @@ namespace Pulpa.Agent.Realtor.Services
         }
 
     }
+
+    public class ChatHub : Hub
+    {
+        public async Task SendMessage(string user, string message)
+        {
+            await Clients.All.SendAsync("ReceiveMessage", user, message);
+        }
+    }
+
+
+     
 }

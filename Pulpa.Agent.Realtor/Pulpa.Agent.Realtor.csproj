@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pulpa.Agent.Realtor.Client\Pulpa.Agent.Realtor.Client.csproj" />
+    <ProjectReference Include="..\Pulpa.Agent.Realtor.Domain\Pulpa.Agent.Realtor.Domain.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.*" />
   </ItemGroup>
 
