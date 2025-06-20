@@ -1,0 +1,113 @@
+﻿@page "/property-form" 
+@using MudBlazor
+
+
+<MudPaper Class="pa-6 mx-auto" MaxWidth="600px" Elevation="4">
+    <MudForm @ref="_form" Model="_model" Validated="OnValidated">
+        <MudText Typo="Typo.h5" Class="mb-4">Property Form</MudText>
+
+        <MudSelect T="PropertyType" Label="Property Type" @bind-Value="_model.PropertyType" Required="true" Class="mb-3">
+            @foreach (var type in Enum.GetValues<PropertyType>())
+            {
+                <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="ListingType" Label="Listing Type" @bind-Value="_model.ListingType" Required="true" Class="mb-3">
+            @foreach (var type in Enum.GetValues<ListingType>())
+            {
+                <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTextField @bind-Value="_model.Neighborhood" Label="Neighborhood" Required="true" Class="mb-3" />
+        <MudTextField @bind-Value="_model.City" Label="City" Required="true" Class="mb-3" />
+        <MudTextField @bind-Value="_model.PostalCode" Label="Postal Code" Required="true" Class="mb-3" />
+
+        <MudNumericField @bind-Value="_model.Bedrooms" Label="Bedrooms" Required="true" Min="0" Class="mb-3" />
+        <MudNumericField @bind-Value="_model.Bathrooms" Label="Bathrooms" Min="0" Class="mb-3" />
+        <MudNumericField @bind-Value="_model.Area" Label="Area (m²)" Min="0" Class="mb-3" />
+        <MudNumericField @bind-Value="_model.Stories" Label="Stories" Min="0" Class="mb-3" />
+        <MudNumericField @bind-Value="_model.Age" Label="Age (years)" Min="0" Class="mb-3" />
+
+        <MudSelect T="Amenity" Label="Amenities" @bind-SelectedValues="_selectedAmenities" MultiSelection="true" Class="mb-3">
+            @foreach (var amenity in Enum.GetValues<Amenity>())
+            {
+                if (amenity != Amenity.None)
+                {
+                    <MudSelectItem Value="amenity">@amenity.ToString()</MudSelectItem>
+                }
+            }
+        </MudSelect>
+
+        <MudSelect T="PropertyCondition" Label="Condition" @bind-Value="_model.Condition" Required="true" Class="mb-3">
+            @foreach (var cond in Enum.GetValues<PropertyCondition>())
+            {
+                <MudSelectItem Value="cond">@cond.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="RentalModality" Label="Rental Modality" @bind-Value="_model.RentalModality" Required="true" Class="mb-3">
+            @foreach (var modality in Enum.GetValues<RentalModality>())
+            {
+                <MudSelectItem Value="modality">@modality.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSwitch T="bool" @bind-Checked="_model.Furnished" Color="Color.Primary" Label="Furnished" Class="mb-3" />
+
+        <MudNumericField @bind-Value="_model.Latitude" Label="Latitude" Class="mb-3" />
+        <MudNumericField @bind-Value="_model.Longitude" Label="Longitude" Class="mb-3" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="@(!_form.IsValid)">Submit</MudButton>
+    </MudForm>
+</MudPaper>
+
+@code {
+    private MudForm _form;
+    private PropertyFormViewModel _model = new();
+    private IEnumerable<Amenity> _selectedAmenities;
+   
+
+    protected override void OnInitialized()
+    {
+        _selectedAmenities = GetAmenitiesFromFlags(_model.Amenities);
+      
+    }
+
+    private void OnValidated()
+    {
+        _model.Amenities = GetFlagsFromAmenities(_selectedAmenities);
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            _model.Amenities = GetFlagsFromAmenities(_selectedAmenities);
+            // TODO: Handle form submission (e.g., send to API, show confirmation)
+        }
+    }
+
+    private static HashSet<Amenity> GetAmenitiesFromFlags(Amenity flags)
+    {
+        var set = new HashSet<Amenity>();
+        foreach (Amenity amenity in Enum.GetValues<Amenity>())
+        {
+            if (amenity != Amenity.None && flags.HasFlag(amenity))
+                set.Add(amenity);
+        }
+        return set;
+    }
+
+    private static Amenity GetFlagsFromAmenities(IEnumerable<Amenity> amenities)
+    {
+        Amenity result = Amenity.None;
+        foreach (var amenity in amenities)
+        {
+            result |= amenity;
+        }
+        return result;
+    }
+}

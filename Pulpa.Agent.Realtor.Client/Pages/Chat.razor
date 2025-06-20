@@ -4,42 +4,70 @@
 
 <PageTitle>AI Chat</PageTitle>
 
-<div class="chat-outer-container">
+<div id="unique_id_scroll_section" class="ma-0" style="height:300px;overflow: auto;">
     <MudPaper Class="p-4 chat-inner-container" Elevation="4">
-        <MudText Typo="Typo.h4" GutterBottom="true">AI Chat</MudText>
+        <MudText Typo="Typo.h4" GutterBottom="true">How can I help you today?</MudText>
         <MudText Typo="Typo.body2" Class="mb-4">
-            Ask me anything, and I'll do my best to respond!
+            Soy un agente que te ayudare a obtener respuestas inteligentes personalizadas a cada solicitud de análisis del mercado inmobiliario
         </MudText>
-
-        <div class="chat-messages-container">
-            <div class="chat-container p-2">
-                @foreach (var message in Messages)
-                {
-                    <MudText Typo="Typo.body1" Class="@GetMessageClass(message.IsUser)">
-                        <b>@(message.IsUser ? "You:" : "AI:")</b> @message.Content
-                    </MudText>
-                }
-                <div class="chat-fade-bottom"></div>
-            </div>
-        </div>
-
-        <div class="chat-input-container">
-            <MudTextField @bind-Value="UserInput"
-            Placeholder="Type your message..."
-            FullWidth="true"
-            Class="mt-2"
-            OnKeyDown="HandleInputKeyDown" />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendMessage" Class="mt-2">
-                Send
-            </MudButton>
-        </div>
+        @foreach (var message in Messages)
+        {
+            @if (message.IsUser)
+            {
+                <MudChat Color="_selectedColor" Dense="@_dense" Elevation="@_elevation" Variant="@_variant" Square="_square" ArrowPosition="_selectedArrowPosition" ChatPosition="ChatBubblePosition.End">
+                    <MudChatHeader Name="Obi-Wan Kenobi" Time="@message.Time" />
+                    <MudAvatar Size="@(_dense ? Size.Small : Size.Medium)">
+                        <MudImage Src="images/jonny.jpg" />
+                    </MudAvatar>
+                    <MudChatBubble>@message.Content</MudChatBubble>
+                    <MudChatFooter Text="Delivered" />
+                </MudChat>
+            }
+            else
+            {
+                <MudChat Color="_selectedColor" Dense="@_dense" Elevation="@_elevation" Variant="@_variant" Square="_square"
+                         ArrowPosition="_selectedArrowPosition" ChatPosition="ChatBubblePosition.Start">
+                    <MudChatHeader Name="Anakin" Time="@message.Time" />
+                    <MudAvatar Size="@(_dense ? Size.Small : Size.Medium)">
+                        <MudImage Src="images/toiletvisit.jpg" />
+                    </MudAvatar>
+                    <MudChatBubble>@message.Content</MudChatBubble>
+                    <MudChatFooter Text="Complete" />
+                </MudChat>
+            }
+        }
+        <MudScrollToTop TopOffset="100"
+                        OnScroll="OnScroll"
+                        Selector="#unique_id_scroll_section"
+                        VisibleCssClass="visible absolute"
+                        HiddenCssClass="invisible">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowUpward" Color="Color">Go to top</MudButton>
+        </MudScrollToTop>
     </MudPaper>
 </div>
+<div class="chat-input-container">
+    <MudTextField @bind-Value="UserInput"
+                  Placeholder="Type your message..."
+                  FullWidth="true"
+                  Class="mt-2"
+                  OnKeyDown="HandleInputKeyDown" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendMessage" Class="mt-2">
+        Send
+    </MudButton>
+</div>
+
+ 
 
 @code {
     private string UserInput = string.Empty;
     private List<Message> Messages = new();
-
+    private bool _dense = true;
+    private bool _square = false;
+    private int _elevation = 5;
+    private Variant _variant = Variant.Text;
+    private Color _selectedColor = Color.Info;
+    private ChatArrowPosition _selectedArrowPosition = ChatArrowPosition.None;
+    Color Color = Color.Success;
 
     private void SendMessage()
     {
@@ -78,9 +106,21 @@
         return isUser ? "text-right text-primary" : "text-left text-secondary";
     }
 
+    private void OnScroll(ScrollEventArgs e)
+    {
+        Color = (e.FirstChildBoundingClientRect.Top * -1) switch
+        {
+            var x when x < 500 => Color.Primary,
+            var x when x < 1500 => Color.Secondary,
+            var x when x < 2500 => Color.Tertiary,
+            _ => Color.Error
+        };
+    }
+
     private class Message
     {
         public string Content { get; set; }
         public bool IsUser { get; set; }
+        public string? Time { get; set; }
     }
 }
